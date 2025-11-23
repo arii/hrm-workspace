@@ -1,16 +1,82 @@
-Jules Ops CLIJules Ops is a unified command-line tool that bridges Jules AI sessions with GitHub project management. It allows you to visualize your development status in one place and seamlessly turn GitHub Issues into active AI coding sessions.🚀 Key FeaturesUnified Dashboard: See active Jules sessions, open Pull Requests, and assigned Issues in a single view.Smart Start (work-on): Instantly start a Jules session from a GitHub Issue ID. The tool automatically fetches the issue title/body and creates a dedicated feature branch.Workflow Automation: Manage the lifecycle of AI sessions (Create → Watch → Publish PR) without leaving the terminal.Zero-Config Client: Embedded client logic means no external Python dependencies other than requests.🛠️ PrerequisitesPython 3.xGitHub CLI (gh)Must be installed and authenticated (gh auth login).Python Requests Librarypip install requests
-⚙️ SetupMake the script executable:chmod +x jules_ops.py
-Set your API Key:You can export it as an environment variable (recommended) or pass it via flags.export JULES_API_KEY="your-api-key-here"
-📖 Usage Guide1. The Dashboard (status)This is your "Mission Control". It displays:🧠 Jules Sessions: Active/Succeeded AI tasks.🚀 Pull Requests: Open PRs with their review status (✅ Approved, 🚫 Changes Requested).📢 Issues: Your open backlog../jules_ops.py status
-2. The "Smart Start" Workflow (work-on)The fastest way to start coding. Pick an issue ID from the status board and let Jules handle it.Command:./jules_ops.py work-on <issue_id>
-What happens:Fetches Issue #102 title and description from GitHub.Creates a target branch (e.g., feature/issue-102).Sends a prompt to Jules with the issue context.Starts monitoring the session.3. Manual Session Creation (create)For tasks not tracked in GitHub or quick experiments../jules_ops.py create --prompt "Refactor the login page to use NextAuth" --branch "refactor/login" --title "Login Refactor"
-4. Publish a PR (publish)When a session succeeds, tell Jules to finalize the work and open a Pull Request../jules_ops.py publish <session_name_or_id>
-5. Monitoring (watch)Re-attach to a running session to see live status updates../jules_ops.py watch <session_name_or_id>
-⚡ Workflow ExampleHere is a typical developer workflow using Jules Ops:Check the board:./jules_ops.py status
-# You see Issue #45: "Fix memory leak in websocket hook"
-Start work:./jules_ops.py work-on 45
-# Jules starts analyzing the issue and writing code...
-Wait for success:The CLI monitors the session until it reports SUCCEEDED.Publish:./jules_ops.py publish projects/123/locations/us/sessions/abc-xyz
-# Jules creates the PR.
-Verify:./jules_ops.py status
-# You now see a new Open PR linked to branch 'feature/issue-45'
+# Jules Ops & Session Tools
+
+This directory contains Python scripts for managing Jules AI coding sessions and their integration with GitHub project workflows.
+
+## Key Scripts
+
+### `jules_ops.py`
+A unified CLI tool for interacting with Jules AI sessions and GitHub Issues/PRs.
+
+**Features:**
+- **Unified Dashboard:** View active Jules sessions, open PRs, and assigned Issues.
+- **Smart Start (`work-on`):** Start a Jules session from a GitHub Issue ID. Automatically creates a feature branch and sends the issue context to Jules.
+- **Session Lifecycle Automation:** Create, monitor, and publish Jules sessions and PRs.
+- **Zero-Config:** Only requires Python 3, `requests`, and authenticated GitHub CLI (`gh`).
+
+**Typical Usage:**
+```bash
+# Show dashboard of sessions, PRs, and issues
+./jules_ops.py status
+
+# Start a Jules session from a GitHub Issue
+./jules_ops.py work-on <issue_id>
+
+# Create a session manually
+./jules_ops.py create --prompt "Refactor login" --branch "refactor/login" --title "Login Refactor"
+
+# Publish a PR for a session
+./jules_ops.py publish <session_id>
+
+# Monitor a session
+./jules_ops.py watch <session_id>
+```
+
+**Setup:**
+- Make executable: `chmod +x jules_ops.py`
+- Set API key: `export JULES_API_KEY="your-api-key"`
+- Install dependencies: `pip install requests`
+- Authenticate GitHub CLI: `gh auth login`
+
+---
+
+### `check_branch_session.py`
+A utility to map a branch, PR, or Issue to its corresponding Jules session using the consolidated CSV artifact.
+
+**Features:**
+- **Lookup:** Find the Jules session linked to a branch, PR, or Issue.
+- **Messaging:** Send a message to the session (if `jules_ops.py` is available).
+- **Deletion:** Delete a session after confirmation.
+
+**Typical Usage:**
+```bash
+# Find session for a branch, PR, or issue
+./check_branch_session.py <branch|#pr|issue>
+
+# Send a message to the session
+./check_branch_session.py <identifier> --message "Ping from dev"
+
+# Delete a session
+./check_branch_session.py <identifier> --delete
+```
+
+**Notes:**
+- Uses `consolidated_workstreams.csv` for lookups.
+- Requires `jules_ops.py` for messaging/deletion features.
+
+---
+
+## Other Files
+
+- `consolidated_workstreams.csv`: Artifact mapping branches/PRs/issues to Jules sessions.
+- `pyproject.toml`, `.pre-commit-config.yaml`: Formatting and linting configuration.
+- `jules_sessions.csv`, `github_issues.csv`, `github_prs.csv`: Data exports.
+
+---
+
+## Developer Tips
+
+- All scripts are Python 3.x and require minimal dependencies.
+- For full automation, ensure your API key and GitHub CLI are configured.
+- Use the dashboard (`jules_ops.py status`) to track all active workstreams.
+
+---

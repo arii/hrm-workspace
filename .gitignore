@@ -3,3 +3,5 @@ github_issues.csv
 github_prs.csv
 jules_sessions.csv
 jules_sessions_summary.md
+add
+__pycache__/
