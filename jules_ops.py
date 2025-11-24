@@ -79,8 +79,22 @@ class JulesClient:
         return response.get("sources", []) if response else []
 
     def list_sessions(self):
-        response = self._request("GET", "sessions")
-        return response.get("sessions", []) if response else []
+        all_sessions = []
+        next_page_token = None
+        while True:
+            endpoint = "sessions"
+            if next_page_token:
+                endpoint += f"?pageToken={next_page_token}"
+
+            response = self._request("GET", endpoint)
+            if response:
+                all_sessions.extend(response.get("sessions", []))
+                next_page_token = response.get("nextPageToken")
+                if not next_page_token:
+                    break  # No more pages
+            else:
+                break  # Error or empty response, stop.
+        return all_sessions
 
     def create_session(
         self, prompt, source=DEFAULT_SOURCE, branch=None, title=None
@@ -348,14 +362,22 @@ def normalize_sessions(sessions):
             else s.get("name", "N/A")
         )
 
+        # Extract branch directly from session sourceContext
+        session_branch = (
+            s.get("sourceContext", {})
+            .get("githubRepoContext", {})
+            .get("startingBranch")
+        )
+
         data.append(
             {
                 "id": sid,
                 "full_name": s.get("name"),
                 "state": s.get("state"),
                 "created_at": s.get("createTime"),
-                "title": s.get("title", "").split('\n')[0],
+                "title": s.get("title", "").split("\n")[0],
                 "pr_url": pr_url,
+                "branch": session_branch,  # Add the branch here
             }
         )
     return data
@@ -414,7 +436,7 @@ def correlate_data(sessions, issues, prs):
             "last_activity": s["created_at"],  # default
             "pr_id": None,
             "pr_status": None,
-            "branch": None,
+            "branch": s["branch"],  # Initialize branch from session data
             "issue_id": None,
             "issue_title": None,
         }
