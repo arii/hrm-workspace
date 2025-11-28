@@ -179,9 +179,7 @@ def setup_worktree(branch_name):
 def rebase_and_push(worktree_path, branch_name):
     """
     Attempts to rebase onto origin/leader.
-    If rebase fails, it aborts the rebase and performs a MERGE instead.
-    It deliberately commits the conflict markers so they can be pushed
-    and analyzed by the agent.
+    If rebase fails, it aborts the rebase and reports the failure.
     """
     print("[INFO] Fetching origin/leader...")
     run(["git", "fetch", "origin", "leader"], cwd=worktree_path)
@@ -204,55 +202,10 @@ def rebase_and_push(worktree_path, branch_name):
         return True
     except subprocess.CalledProcessError:
         print("[WARN] Rebase failed due to conflicts.")
-        print("[INFO] Aborting rebase to fallback to Merge strategy...")
+        print("[INFO] Aborting rebase...")
         # Abort the rebase to get back to clean state
         run(["git", "rebase", "--abort"], cwd=worktree_path, check=False)
-
-        print("[INFO] Falling back to Merge to capture conflicts...")
-        try:
-            # Attempt merge
-            run(
-                ["git", "merge", "origin/leader"],
-                cwd=worktree_path,
-                capture_output=True,
-            )
-            # If merge succeeds without conflicts, great!
-            print("[OK] Merge successful.")
-        except subprocess.CalledProcessError:
-            print("[WARN] Merge conflicts detected. Committing markers...")
-            # 1. Stage all files (including those with <<<< markers)
-            run(["git", "add", "."], cwd=worktree_path, check=False)
-
-            # 2. Commit the conflicts.
-            # We use --no-edit to accept default merge message or -m
-            run(
-                [
-                    "git",
-                    "commit",
-                    "-m",
-                    "Merge origin/leader (with unresolved conflicts)",
-                ],
-                cwd=worktree_path,
-                check=False,
-            )
-
-            # Return False to indicate we have conflicts that need resolution
-            # This will trigger the Jules session creation immediately
-            print("[INFO] Force pushing changes (with potential conflicts)...")
-            run(
-                ["git", "push", "origin", branch_name, "--force"],
-                cwd=worktree_path,
-                check=False,
-            )
-            return False
-
-    print("[INFO] Force pushing changes...")
-    run(
-        ["git", "push", "origin", branch_name, "--force"],
-        cwd=worktree_path,
-        check=False,
-    )
-    return True
+        return False
 
 
 def run_checks(worktree_path):
