@@ -520,12 +520,26 @@ def main():
         # 4. Setup Dependencies (Only if git is clean)
         print("\n[STEP] Setting up dependencies...")
         setup_script = os.path.join(worktree_path, "scripts", "setup.sh")
-        if os.path.exists(setup_script):
-            print("[INFO] Running setup.sh...")
-            run([setup_script], cwd=worktree_path)
-        else:
-            print("[WARN] scripts/setup.sh not found, running npm install.")
-            run(["npm", "install"], cwd=worktree_path)
+        try:
+            if os.path.exists(setup_script):
+                print("[INFO] Running setup.sh...")
+                run([setup_script], cwd=worktree_path)
+            else:
+                print("[WARN] scripts/setup.sh not found, running npm install.")
+                run(["npm", "install"], cwd=worktree_path)
+        except subprocess.CalledProcessError as e:
+            print("[ERROR] Setup failed - likely due to unresolved conflicts in package.json")
+            failure = {
+                "step": "Dependency Setup",
+                "cmd": "scripts/setup.sh" if os.path.exists(setup_script) else "npm install",
+                "log": f"Setup failed. Check for merge conflicts in package.json or other files.\n{str(e)}",
+            }
+            results = []
+            # Skip to posting results
+            session_link = None
+            post_pr_comment(args.pr_number, results, failure, session_link, None)
+            print("\n[DONE] Process Complete.")
+            return
 
         # 5. Provision Secrets (for build/test)
         if SECRETS_AVAILABLE:
