@@ -103,6 +103,9 @@ bash scripts/verify-pr.sh [pr_number ...]
 
 # Quick workspace validation
 bash scripts/check-workspace.sh
+
+# Clean up all worktrees
+bash scripts/clean-worktrees.sh
 ```
 
 - Work inside the app:
