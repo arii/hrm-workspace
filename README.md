@@ -125,6 +125,11 @@ If you use VS Code Dev Containers, this workspace will automatically initialize 
 - For full automation, ensure your API key and GitHub CLI are configured.
 - Use the dashboard (`jules_ops.py status`) to track all active workstreams.
 
+### Cross-References
+
+- App testing and conventions: see `hrm/TESTING.md` and `hrm/README.md`.
+- The workspace enforces a local-first process; prefer `npm run verify` inside `hrm/` instead of CI runners.
+
 ---
 
 ## Troubleshooting

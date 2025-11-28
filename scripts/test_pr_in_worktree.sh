@@ -60,18 +60,21 @@ echo "Building the project..."
 npm run build
 
 echo "Running verification if script exists..."
-if npm run | grep -q "verify"; then
+if jq -e '.scripts.verify' package.json > /dev/null; then
+    echo "Running 'npm run verify'..."
     npm run verify
 else
-    echo "Skipping verification, 'verify' script not found."
+    echo "Skipping verification, 'verify' script not found in package.json."
 fi
 
 echo "Running visual tests..."
 TEST_OUTPUT_FILE=$(mktemp)
-if npm run test:visual > $TEST_OUTPUT_FILE 2>&1; then
-    TEST_STATUS="✅ Passed"
-else
+npm run test:visual > $TEST_OUTPUT_FILE 2>&1
+
+if grep -q "failed" $TEST_OUTPUT_FILE; then
     TEST_STATUS="❌ Failed"
+else
+    TEST_STATUS="✅ Passed"
 fi
 
 # Create a comment body

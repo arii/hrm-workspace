@@ -363,7 +363,9 @@ def run_checks(worktree_path):
 def post_pr_comment(pr_number, results, failure_details, session_url=None, analyzer_json=None):
     """Posts a comment to the PR with the results."""
 
-    body = "### Automated Verification Results\n\n"
+    # Summary header
+    summary_status = "PASS" if not failure_details else "FAIL"
+    body = f"### Automated Verification Results — {summary_status}\n\n"
 
     if results:
         # Table of results
