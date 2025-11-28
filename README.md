@@ -1,6 +1,8 @@
-# Jules Ops & Session Tools
+# hrm-workspace
 
-This directory contains Python scripts for managing Jules AI coding sessions and their integration with GitHub project workflows.
+Operational workspace for HRM automation, tooling, and local development.
+
+This workspace contains Python scripts for managing agentic workflows and integrates the `hrm` application as a Git submodule.
 
 ## Key Scripts
 
@@ -72,6 +74,41 @@ A utility to map a branch, PR, or Issue to its corresponding Jules session using
 - `jules_sessions.csv`, `github_issues.csv`, `github_prs.csv`: Data exports.
 
 ---
+
+## Developer Workflow (Submodule Setup)
+
+This workspace tracks the `hrm` application as a Git submodule inside `hrm/`.
+
+- Clone the workspace:
+
+```bash
+git clone <url_of_hrm-workspace>
+cd hrm-workspace
+```
+
+- Initialize and fetch the application submodule:
+
+```bash
+git submodule update --init --recursive
+```
+
+- Run workspace automation (examples):
+
+```bash
+python github-ops/process_pr.py <pr_number>
+```
+
+- Work inside the app:
+
+```bash
+cd hrm
+npm install
+npm run test
+```
+
+### Dev Container
+
+If you use VS Code Dev Containers, this workspace will automatically initialize submodules via the post-create command defined in `.devcontainer/devcontainer.json`.
 
 ## Developer Tips
 

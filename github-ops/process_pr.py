@@ -24,9 +24,11 @@ try:
 except ImportError:
     SECRETS_AVAILABLE = False
 
-# Configuration
-REPO_DIR = "/home/ari/workspace/leader"
-WORKTREES_BASE = "/home/ari/workspace/worktrees"
+# Configuration: operate on the hrm app inside this workspace
+# REPO_DIR points to the `hrm` subdirectory (git repo or submodule)
+WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_DIR = os.path.join(WORKSPACE_ROOT, "hrm")
+WORKTREES_BASE = os.path.join(WORKSPACE_ROOT, "worktrees")
 
 
 def run(cmd, cwd=None, check=True, capture_output=False, env=None):
@@ -458,6 +460,15 @@ def main():
         help="Start production server if all checks pass",
     )
     args = parser.parse_args()
+
+    # 0. Validate HRM layout before proceeding
+    validator = os.path.join(WORKSPACE_ROOT, "local-dev", "validate_hrm_layout.py")
+    if os.path.exists(validator):
+        try:
+            run(["python", validator], cwd=WORKSPACE_ROOT)
+        except subprocess.CalledProcessError:
+            print("[FAIL] HRM layout validation failed. Aborting.")
+            sys.exit(1)
 
     # 1. Get PR Details
     print(f"[INFO] Fetching details for PR #{args.pr_number}...")

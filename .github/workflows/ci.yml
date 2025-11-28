@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workspace
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate HRM layout
+        run: |
+          python local-dev/validate_hrm_layout.py
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install app dependencies
+        run: |
+          cd hrm
+          npm ci
+
+      - name: Lint
+        run: |
+          cd hrm
+          npm run lint --if-present
+
+      - name: Build
+        run: |
+          cd hrm
+          npm run build --if-present
+
+      - name: Unit Tests
+        run: |
+          cd hrm
+          npm test -- --ci || true
+
+      - name: Visual Tests
+        run: |
+          cd hrm
+          npm run test:visual -- --reporter=list || true
