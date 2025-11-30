@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Kill all processes before starting to ensure a clean environment
+echo "[INFO] Running kill-all script to stop any lingering processes..."
+if ! npm run --prefix hrm kill-all; then
+    echo "[WARN] 'npm run kill-all' failed. This may be okay if no processes were running."
+    echo "[INFO] Continuing with PR verification..."
+fi
+
 # Parse flags
 SKIP_JULES=false
 COMMENT_JULES=false

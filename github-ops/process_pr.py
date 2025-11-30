@@ -522,7 +522,11 @@ def main():
     )
     args = parser.parse_args()
 
-    # 0. Validate HRM layout before proceeding
+    # 0. Kill existing processes to ensure a clean slate
+    print("\n[STEP] Ensuring no stray processes are running...")
+    run(["npm", "run", "kill-all"], cwd=REPO_DIR, check=False)
+
+    # 1. Validate HRM layout before proceeding
     validator = os.path.join(WORKSPACE_ROOT, "local-dev", "validate_hrm_layout.py")
     if os.path.exists(validator):
         try:
