@@ -12,6 +12,7 @@ fi
 SKIP_JULES=false
 COMMENT_JULES=false
 SKIP_REBASE=false
+SKIP_TESTING=false
 PR_ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-rebase)
       SKIP_REBASE=true
+      shift
+      ;;
+    --skip-testing)
+      SKIP_TESTING=true
       shift
       ;;
     *)
@@ -58,6 +63,12 @@ for PR_NUMBER in "${PR_NUMBERS[@]}"; do
   echo "[INFO] Processing PR #${PR_NUMBER}..."
   echo "=========================================="
   
+  # Build python command
+  CMD_ARGS=()
+  if [ "$SKIP_TESTING" = true ]; then
+    CMD_ARGS+=("--skip-testing")
+  fi
+
   # Build environment variables
   ENV_VARS=""
   if [ "$SKIP_JULES" = true ]; then
@@ -80,9 +91,9 @@ for PR_NUMBER in "${PR_NUMBERS[@]}"; do
   
   # Run with environment variables
   if [ -n "$ENV_VARS" ]; then
-    env $ENV_VARS python github-ops/process_pr.py "${PR_NUMBER}"
+    env $ENV_VARS python github-ops/process_pr.py "${PR_NUMBER}" "${CMD_ARGS[@]}"
   else
-    python github-ops/process_pr.py "${PR_NUMBER}"
+    python github-ops/process_pr.py "${PR_NUMBER}" "${CMD_ARGS[@]}"
   fi
   
   echo "[DONE] PR #${PR_NUMBER} processing complete."
