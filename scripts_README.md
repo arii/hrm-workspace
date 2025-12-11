@@ -16,6 +16,12 @@ This directory contains unified Python scripts for managing the HRM project work
 - Timeout support and retry logic
 - Used by all scripts that interact with Jules
 
+### Unified GitHub Client (`github_client.py`)
+- Encapsulates Git and GitHub CLI operations
+- Consistent error handling and JSON parsing
+- Safe execution of subprocess commands
+- Used by scripts requiring repository interaction
+
 ## Core Scripts
 
 ### `jules_ops.py`
@@ -31,7 +37,11 @@ Main operations script for Jules and GitHub integration:
 - **`delete_failed_sessions.py`** - Delete all Jules sessions (cleanup tool)
 - **`close_jules_sessions.py`** - Close sessions associated with specific PR numbers
 
-### GitHub Operations (`github-ops/`)
+### GitHub Operations
+- **`github_client.py`** - Robust client for Git and GitHub CLI operations
+- **`scripts/update_priority_prs.py`** - Update PRs from leader. Can take specific PRs/branches as arguments or update all open PRs if no arguments are provided.
+
+### GitHub Ops Directory (`github-ops/`)
 - **`process_pr.py`** - Process and integrate PRs with Jules sessions
 - **`check_branch_session.py`** - Check branch/session relationships
 
@@ -80,6 +90,9 @@ python jules_ops.py export --format csv
 
 # Create session from GitHub issue
 python jules_ops.py work-on 456
+
+# Update priority PRs
+python scripts/update_priority_prs.py
 
 # Clean up completed sessions
 python delete_failed_sessions.py

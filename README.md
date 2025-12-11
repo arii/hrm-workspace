@@ -121,6 +121,12 @@ git submodule update --init --recursive
 # Process specific PR(s)
 python github-ops/process_pr.py <pr_number>
 
+# Update specific PRs or branches
+python scripts/update_priority_prs.py 123 feature/login
+
+# Update all open PRs
+python scripts/update_priority_prs.py
+
 # Process specific PRs or all open PRs (if no args)
 bash scripts/verify-pr.sh [pr_number ...]
 
