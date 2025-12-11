@@ -31,7 +31,12 @@ Main operations script for Jules and GitHub integration:
 - **`delete_failed_sessions.py`** - Delete all Jules sessions (cleanup tool)
 - **`close_jules_sessions.py`** - Close sessions associated with specific PR numbers
 
-### GitHub Operations (`github-ops/`)
+### GitHub Operations
+- **`github_client.py`** - Robust client for Git and GitHub CLI operations
+- **`scripts/update_priority_prs.py`** - Update high-priority PRs from leader (replaces shell script)
+- **`scripts/update_prs_with_test_fixes.py`** - Batch update PRs with fixes (replaces shell script)
+
+### GitHub Ops Directory (`github-ops/`)
 - **`process_pr.py`** - Process and integrate PRs with Jules sessions
 - **`check_branch_session.py`** - Check branch/session relationships
 
@@ -80,6 +85,9 @@ python jules_ops.py export --format csv
 
 # Create session from GitHub issue
 python jules_ops.py work-on 456
+
+# Update priority PRs
+python scripts/update_priority_prs.py
 
 # Clean up completed sessions
 python delete_failed_sessions.py

@@ -17,6 +17,7 @@ from common_config import (
     HRM_REPO_DIR, JULES_DEFAULT_SOURCE
 )
 from jules_client import get_jules_client
+from github_client import GitHubClient
 
 # Optional Pandas Import
 try:
@@ -39,34 +40,13 @@ DEFAULT_SOURCE = JULES_DEFAULT_SOURCE
 # GITHUB UTILITIES
 # -------------------------------------------------------------------------
 
-
-def check_gh_dependencies():
-    if not shutil.which("gh"):
-        logger.error("❌ GitHub CLI ('gh') is not installed.")
-        sys.exit(1)
-
-
-def run_gh_cmd(cmd_list):
-    try:
-        result = subprocess.run(
-            cmd_list,
-            capture_output=True,
-            text=True,
-            check=True,
-            cwd=GIT_REPO_PATH,
-        )
-        return json.loads(result.stdout)
-    except subprocess.CalledProcessError:
-        logger.error(f"❌ GH Command failed: {' '.join(cmd_list)}")
-        return None
-
+# Initialized GitHub Client
+gh_client = GitHubClient(repo_path=HRM_REPO_DIR)
 
 def fetch_issue_context(issue_number):
     logger.info(f"📥 Fetching context from Issue #{issue_number}...")
-    check_gh_dependencies()
-    data = run_gh_cmd(
-        ["gh", "issue", "view", str(issue_number), "--json", "title,body,url"]
-    )
+    data = gh_client.get_issue(issue_number)
+
     if data:
         return {
             "title": data["title"],
@@ -588,39 +568,9 @@ def main():
     if args.command in ["status", "export"]:
         logger.info("🔄 Refreshing data from Jules and GitHub...")
         sessions = client.list_sessions()
-        check_gh_dependencies()
-        issues = (
-            run_gh_cmd(
-                [
-                    "gh",
-                    "issue",
-                    "list",
-                    "--state",
-                    "open",
-                    "--limit",
-                    "100",
-                    "--json",
-                    "number,title,assignees,updatedAt,url",
-                ]
-            )
-            or []
-        )
-        prs = (
-            run_gh_cmd(
-                [
-                    "gh",
-                    "pr",
-                    "list",
-                    "--state",
-                    "open",
-                    "--limit",
-                    "100",
-                    "--json",
-                    "number,title,headRefName,reviewDecision,url,updatedAt",
-                ]
-            )
-            or []
-        )
+
+        issues = gh_client.list_issues(state="open", limit=100)
+        prs = gh_client.list_prs(state="open", limit=100)
 
         if args.command == "status":
             if args.style == "pandas":
@@ -641,7 +591,7 @@ def main():
         session_name = client.create_session(
             args.prompt, args.source, args.branch, args.title
         )
-        if session_.name:
+        if session_name:
             print(f"✅ Session started: {session_name}")
             if not args.no_watch:
                 client.monitor_session(session_name)
