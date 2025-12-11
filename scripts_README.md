@@ -16,6 +16,12 @@ This directory contains unified Python scripts for managing the HRM project work
 - Timeout support and retry logic
 - Used by all scripts that interact with Jules
 
+### Unified GitHub Client (`github_client.py`)
+- Encapsulates Git and GitHub CLI operations
+- Consistent error handling and JSON parsing
+- Safe execution of subprocess commands
+- Used by scripts requiring repository interaction
+
 ## Core Scripts
 
 ### `jules_ops.py`
