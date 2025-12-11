@@ -1,0 +1,54 @@
+
+> hrm@0.2.2 dev /app/hrm
+> cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true node --env-file=.env.local --loader ts-node/esm server.ts | pnpm exec pino-pretty
+
+(node:3982) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3982) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[10:07:17.829] INFO (3982): Starting server in development mode
+[10:07:17.830] INFO (3982): Environment: NODE_ENV=development
+[10:07:17.830] INFO (3982): NEXTAUTH_URL: http://127.0.0.1:3000
+[10:07:17.830] INFO (3982): Hostname: 127.0.0.1, Port: 3000
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[10:07:19.777] DEBUG (3982): Spotify Polling Service Initialized.
+[Broadcaster] Initialized successfully.
+[10:07:19.782] INFO (3982): > Ready on http://127.0.0.1:3000
+[10:07:19.782] INFO (3982): > WebSocket Server listening on ws://127.0.0.1:3000/ws
+ ○ Compiling / ...
+ GET / 200 in 10.3s (compile: 9.4s, render: 846ms)
+WebSocket Client connected: user-fnnguvu
+[Middleware] Auth request: {
+  pathname: '/api/auth/session',
+  host: 'localhost:3000',
+  forwardedHost: 'localhost:3000',
+  forwardedProto: 'http',
+  forwardedPort: '3000'
+}
+WebSocket Client disconnected: user-fnnguvu
+[next-auth][warn][DEBUG_ENABLED]
+https://next-auth.js.org/warnings#debug_enabled
+[API /access-token] No session or access token found.
+ GET / 200 in 253ms (compile: 10ms, render: 244ms)
+WebSocket Client connected: user-raez9k6
+[Middleware] Auth request: {
+  pathname: '/api/auth/session',
+  host: 'localhost:3000',
+  forwardedHost: 'localhost:3000',
+  forwardedProto: 'http',
+  forwardedPort: '3000'
+}
+[API /access-token] No session or access token found.
+ GET /api/spotify/access-token 401 in 43ms (compile: 18ms, render: 24ms)
+[socketManager] INCOMING MESSAGE from user-raez9k6: {"type":"GET_STATE"}
+[socketManager] PARSED JSON: { type: 'GET_STATE' }
+[socketManager] Received message from user-raez9k6: GET_STATE
+WebSocket Client disconnected: user-raez9k6
+ GET / 200 in 192ms (compile: 5ms, render: 187ms)
+ ELIFECYCLE  Command failed.
