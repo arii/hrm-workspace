@@ -73,7 +73,7 @@ class JulesClient:
         response = self._request("GET", endpoint)
         return response.get("sources", []) if response and "error" not in response else []
         
-    def list_sessions(self) -> List[Dict[str, Any]]:
+    def list_sessions(self, filter: Optional[str] = None) -> List[Dict[str, Any]]:
         """Get all sessions with pagination."""
         all_sessions = []
         next_page_token = None
@@ -81,6 +81,10 @@ class JulesClient:
         while True:
             endpoint = "sessions"
             params = {}
+
+            if filter:
+                params["filter"] = filter
+
             if next_page_token:
                 params["pageToken"] = next_page_token
                 

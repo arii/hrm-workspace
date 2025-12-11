@@ -8,7 +8,8 @@ import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime
+import logging
+from datetime import datetime, timezone
 
 # Import unified configuration and client
 from common_config import (
@@ -27,7 +28,7 @@ except ImportError:
 # Setup
 setup_python_path()
 ensure_workspace()
-logger = setup_logging("jules_ops")
+logger = setup_logging("jules_ops", level=logging.INFO)
 
 # Backward compatibility
 GIT_REPO_PATH = str(HRM_REPO_DIR)
@@ -561,6 +562,13 @@ def main():
     p_del = subparsers.add_parser("delete", help="Delete a session")
     p_del.add_argument("session_name", help="Session ID/Name")
 
+    p_del_old = subparsers.add_parser(
+        "delete-old", help="Delete sessions older than N hours"
+    )
+    p_del_old.add_argument(
+        "hours_old", type=int, default=10, help="Sessions older than this many hours will be deleted"
+    )
+
     subparsers.add_parser("list-sources", help="List available Jules sources")
     subparsers.add_parser(
         "summary", help="Generate Markdown summary of sessions"
@@ -633,7 +641,7 @@ def main():
         session_name = client.create_session(
             args.prompt, args.source, args.branch, args.title
         )
-        if session_name:
+        if session_.name:
             print(f"✅ Session started: {session_name}")
             if not args.no_watch:
                 client.monitor_session(session_name)
@@ -678,6 +686,33 @@ def main():
 
     elif args.command == "delete":
         client.delete_session(args.session_name)
+
+    elif args.command == "delete-old":
+        # New command to delete old sessions
+        hours_old = args.hours_old
+        logger.info(f"🗑️ Deleting sessions older than {hours_old} hours...")
+        sessions = client.list_sessions()
+        deleted_count = 0
+        for s in sessions:
+            created_at_iso = s.get("createTime")
+            if created_at_iso:
+                try:
+                    dt_utc = datetime.fromisoformat(created_at_iso.replace("Z", "+00:00"))
+                    now_utc = datetime.now(timezone.utc)
+                    delta = now_utc - dt_utc
+
+                    if delta.total_seconds() > hours_old * 3600:
+                        session_id = (
+                            s.get("name", "").split("/")[-1]
+                            if "/" in s.get("name", "")
+                            else s.get("name", "N/A")
+                        )
+                        logger.info(f"    Deleting session: {session_id} (Created: {format_time(created_at_iso)})")
+                        client.delete_session(session_id)
+                        deleted_count += 1
+                except ValueError as e:
+                    logger.warning(f"Could not parse createTime '{created_at_iso}' for session {s.get('name', 'N/A')}: {e}")
+        logger.info(f"✅ Deleted {deleted_count} sessions older than {hours_old} hours.")
 
     elif args.command == "list-sources":
         sources = client.list_sources()

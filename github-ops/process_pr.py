@@ -8,6 +8,10 @@ import subprocess
 import sys
 import time
 
+# Add workspace root to path before other imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 # Import unified configuration and client
 from common_config import (
     setup_logging, setup_python_path, WORKSPACE_ROOT, HRM_REPO_DIR, WORKTREES_BASE
