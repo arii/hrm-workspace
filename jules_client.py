@@ -27,10 +27,11 @@ class JulesClient:
             )
             sys.exit(1)
         
-        self.headers = {
+        self.session = requests.Session()
+        self.session.headers.update({
             "Content-Type": "application/json",
             "X-Goog-Api-Key": self.api_key,
-        }
+        })
         
     def _request(self, method: str, endpoint: str, data: Optional[Dict] = None, 
                 params: Optional[Dict] = None) -> Optional[Dict[str, Any]]:
@@ -38,8 +39,8 @@ class JulesClient:
         url = f"{JULES_API_BASE_URL}/{endpoint}"
         
         try:
-            response = requests.request(
-                method, url, headers=self.headers, json=data, params=params, timeout=30
+            response = self.session.request(
+                method, url, json=data, params=params, timeout=30
             )
             response.raise_for_status()
             
@@ -73,14 +74,14 @@ class JulesClient:
         response = self._request("GET", endpoint)
         return response.get("sources", []) if response and "error" not in response else []
         
-    def list_sessions(self, filter: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_sessions(self, filter: Optional[str] = None, page_size: int = 100) -> List[Dict[str, Any]]:
         """Get all sessions with pagination."""
         all_sessions = []
         next_page_token = None
         
         while True:
             endpoint = "sessions"
-            params = {}
+            params = {"pageSize": page_size}
 
             if filter:
                 params["filter"] = filter
