@@ -1,0 +1,126 @@
+
+> hrm@0.2.2 dev /app/hrm
+> cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true node --env-file=.env.local --loader ts-node/esm server.ts | pnpm exec pino-pretty
+
+(node:3596) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3596) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[10:05:02.928] INFO (3596): Starting server in development mode
+[10:05:02.929] INFO (3596): Environment: NODE_ENV=development
+[10:05:02.929] INFO (3596): NEXTAUTH_URL: http://127.0.0.1:3000
+[10:05:02.929] INFO (3596): Hostname: 127.0.0.1, Port: 3000
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[10:05:04.074] DEBUG (3596): Spotify Polling Service Initialized.
+[Broadcaster] Initialized successfully.
+[10:05:04.077] INFO (3596): > Ready on http://127.0.0.1:3000
+[10:05:04.077] INFO (3596): > WebSocket Server listening on ws://127.0.0.1:3000/ws
+ ○ Compiling / ...
+ GET / 200 in 5.3s (compile: 4.9s, render: 465ms)
+WebSocket Client connected: user-ncwpmp9
+[Middleware] Auth request: {
+  pathname: '/api/auth/session',
+  host: 'localhost:3000',
+  forwardedHost: 'localhost:3000',
+  forwardedProto: 'http',
+  forwardedPort: '3000'
+}
+[socketManager] INCOMING MESSAGE from user-ncwpmp9: {"type":"GET_STATE"}
+[socketManager] PARSED JSON: { type: 'GET_STATE' }
+[socketManager] Received message from user-ncwpmp9: GET_STATE
+[next-auth][warn][DEBUG_ENABLED]
+https://next-auth.js.org/warnings#debug_enabled
+[API /access-token] No session or access token found.
+ GET /api/spotify/access-token 401 in 1813ms (compile: 1762ms, render: 51ms)
+[API /access-token] No session or access token found.
+ GET /api/spotify/access-token 401 in 37ms (compile: 8ms, render: 29ms)
+[API /access-token] No session or access token found.
+ GET /api/spotify/access-token 401 in 22ms (compile: 3ms, render: 19ms)
+(node:4118) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4118) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Workout API Error: Error: Failed to fetch doc from Google (Status: 404)
+    at GET (file:/app/hrm/app/api/workout/route.ts:26:13)
+  24 |
+  25 |     if (!response.ok) {
+> 26 |       throw new Error(
+     |             ^
+  27 |         `Failed to fetch doc from Google (Status: ${response.status})`
+  28 |       )
+  29 |     }
+ GET /api/workout?docId=1Tev5AMiHYi2Jkg9x6zRQoiJ_o2X_wZMqAXVpwgjlSqzlcXelxSc7psjE8n3N-ghzXMFtnv51nc2fJZ 500 in 2.1s (compile: 1907ms, render: 234ms)
+Workout API Error: Error: Failed to fetch doc from Google (Status: 404)
+    at GET (file:/app/hrm/app/api/workout/route.ts:26:13)
+  24 |
+  25 |     if (!response.ok) {
+> 26 |       throw new Error(
+     |             ^
+  27 |         `Failed to fetch doc from Google (Status: ${response.status})`
+  28 |       )
+  29 |     }
+ GET /api/workout?docId=1Tev5AMiHYi2Jkg9x6zRQoiJ_o2X_wZMqAXVpwgjlSqzlcXelxSc7psjE8n3N-ghzXMFtnv51nc2fJZ 500 in 175ms (compile: 6ms, render: 169ms)
+ GET /api/auth/session 200 in 2.9s (compile: 2.8s, proxy.ts: 113ms, render: 16ms)
+ ○ Compiling /api/spotify/access-token ...
+WebSocket Client disconnected: user-ncwpmp9
+ GET /client/mock 200 in 3.0s (compile: 2.8s, render: 231ms)
+WebSocket Client connected: user-fdckc8h
+[Middleware] Auth request: {
+  pathname: '/api/auth/session',
+  host: 'localhost:3000',
+  forwardedHost: 'localhost:3000',
+  forwardedProto: 'http',
+  forwardedPort: '3000'
+}
+[socketManager] INCOMING MESSAGE from user-fdckc8h: {"type":"GET_STATE"}
+[socketManager] PARSED JSON: { type: 'GET_STATE' }
+[socketManager] Received message from user-fdckc8h: GET_STATE
+ GET /api/auth/session 200 in 82ms (compile: 40ms, proxy.ts: 9ms, render: 33ms)
+(node:4128) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4128) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+WebSocket Client disconnected: user-fdckc8h
+ GET / 200 in 144ms (compile: 5ms, render: 139ms)
+WebSocket Client connected: user-27phqbd
+[Middleware] Auth request: {
+  pathname: '/api/auth/session',
+  host: 'localhost:3000',
+  forwardedHost: 'localhost:3000',
+  forwardedProto: 'http',
+  forwardedPort: '3000'
+}
+[API /access-token] No session or access token found.
+ GET /api/spotify/access-token 401 in 22ms (compile: 4ms, render: 18ms)
+[socketManager] INCOMING MESSAGE from user-27phqbd: {"type":"GET_STATE"}
+[socketManager] PARSED JSON: { type: 'GET_STATE' }
+[socketManager] Received message from user-27phqbd: GET_STATE
+ GET /api/auth/session 200 in 81ms (compile: 57ms, proxy.ts: 9ms, render: 16ms)
+WebSocket Client disconnected: user-27phqbd
+ GET /client/mock 200 in 171ms (compile: 6ms, render: 165ms)
+(node:4567) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4567) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+WebSocket Client connected: user-2xgp1v0
+[Middleware] Auth request: {
+  pathname: '/api/auth/session',
+  host: 'localhost:3000',
+  forwardedHost: 'localhost:3000',
+  forwardedProto: 'http',
+  forwardedPort: '3000'
+}
+ GET /api/auth/session 200 in 26ms (compile: 7ms, proxy.ts: 8ms, render: 11ms)
+[socketManager] INCOMING MESSAGE from user-2xgp1v0: {"type":"GET_STATE"}
+[socketManager] PARSED JSON: { type: 'GET_STATE' }
+[socketManager] Received message from user-2xgp1v0: GET_STATE
+WebSocket Client disconnected: user-2xgp1v0
