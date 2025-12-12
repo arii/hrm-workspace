@@ -118,20 +118,41 @@ class QAAuditor(Auditor):
         body_sections = ["## Summary", "Automated review of test strategy and coverage."]
 
         # 1. Test Stability
-        body_sections.append("## Flakiness Report")
+        body_sections.append("## Flakiness & Determinism Report")
         timeouts = []
+        random_inputs = []
+        isolation_issues = []
+
         tests_dir = self.repo_dir / "tests"
         if tests_dir.exists():
             for p in tests_dir.rglob("*.ts"):
-                found = self._grep_file(str(p.relative_to(self.repo_dir)), r"page\.waitForTimeout")
-                timeouts.extend(found)
+                rel_path = str(p.relative_to(self.repo_dir))
+
+                # Check for timeouts
+                timeouts.extend(self._grep_file(rel_path, r"(page\.waitForTimeout|setTimeout|setInterval)"))
+
+                # Check for random inputs
+                random_inputs.extend(self._grep_file(rel_path, r"Math\.random"))
+
+                # Check for serial mode (potential isolation issue)
+                isolation_issues.extend(self._grep_file(rel_path, r"test\.describe\.serial"))
 
         if timeouts:
-            body_sections.append("Found hardcoded timeouts (`page.waitForTimeout`):")
+            body_sections.append("Found potential timing assumptions (waitForTimeout/setTimeout):")
             for t in timeouts:
                 body_sections.append(f"- `{t}`")
         else:
             body_sections.append("No hardcoded timeouts found in `tests/`.")
+
+        if random_inputs:
+            body_sections.append("Found non-deterministic inputs (`Math.random`):")
+            for r in random_inputs:
+                body_sections.append(f"- `{r}`")
+
+        if isolation_issues:
+            body_sections.append("Found tests running in serial mode (check for isolation):")
+            for i in isolation_issues:
+                body_sections.append(f"- `{i}`")
 
         # 2. Coverage Gaps
         body_sections.append("## Coverage Gaps")
