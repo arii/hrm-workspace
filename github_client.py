@@ -140,11 +140,36 @@ class GitHubClient:
         except subprocess.CalledProcessError:
             return False
 
+    def get_file_content(self, branch: str, filepath: str) -> Optional[str]:
+        """Fetch the content of a file at a specific branch/revision."""
+        try:
+            return self.run_cmd(["git", "show", f"{branch}:{filepath}"])
+        except subprocess.CalledProcessError:
+            logger.warning(f"Failed to fetch content for {filepath} at {branch}")
+            return None
+
+    def get_diff(self, base: str, head: str, filepath: str) -> Optional[str]:
+        """Fetch the diff for a file between two revisions."""
+        try:
+            return self.run_cmd(["git", "diff", f"{base}...{head}", "--", filepath])
+        except subprocess.CalledProcessError:
+            logger.warning(f"Failed to fetch diff for {filepath} between {base} and {head}")
+            return None
+
+    def get_changed_files(self, base: str, head: str) -> List[str]:
+        """Get a list of changed files between two revisions."""
+        try:
+            output = self.run_cmd(["git", "diff", "--name-only", f"{base}...{head}"])
+            return output.splitlines() if output else []
+        except subprocess.CalledProcessError:
+            logger.warning(f"Failed to fetch changed files between {base} and {head}")
+            return []
+
     # --- GitHub Operations ---
 
     def get_pr(self, number: int) -> Optional[Dict[str, Any]]:
         return self.run_gh_json(
-            ["gh", "pr", "view", str(number), "--json", "number,title,body,headRefName,state,url,reviewDecision"]
+            ["gh", "pr", "view", str(number), "--json", "number,title,body,headRefName,baseRefName,headRefOid,state,url,reviewDecision"]
         )
 
     def list_prs(self, state: str = "open", limit: int = 100) -> List[Dict[str, Any]]:
@@ -158,7 +183,7 @@ class GitHubClient:
                 "--limit",
                 str(limit),
                 "--json",
-                "number,title,headRefName,state,url,reviewDecision,updatedAt",
+                "number,title,headRefName,baseRefName,headRefOid,state,url,reviewDecision,updatedAt",
             ]
         ) or []
 
@@ -181,3 +206,12 @@ class GitHubClient:
                 "number,title,assignees,updatedAt,url",
             ]
         ) or []
+
+    def post_pr_comment(self, pr_number: int, body: str) -> bool:
+        """Post a comment on a Pull Request."""
+        try:
+            self.run_cmd(["gh", "pr", "comment", str(pr_number), "--body", body])
+            return True
+        except subprocess.CalledProcessError:
+            logger.error(f"Failed to post comment on PR #{pr_number}")
+            return False
