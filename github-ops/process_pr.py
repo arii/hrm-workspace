@@ -691,14 +691,83 @@ def main():
                 "log": output,
             }
 
+        # 7. Run Codebase Auditor (Expand script capability)
+        auditor_script = os.path.join(WORKSPACE_ROOT, "scripts", "audit_codebase.py")
+        if os.path.exists(auditor_script) and not failure:
+            print("\n[STEP] Running Codebase Auditor...")
+            # We want to scan only changed files in the worktree
+            # But getting changed files relative to leader in a worktree is tricky if we just merged.
+            # We'll diff against origin/leader.
+            try:
+                diff_cmd = ["git", "diff", "--name-only", "--diff-filter=d", "origin/leader...HEAD"]
+                diff_proc = run(diff_cmd, cwd=worktree_path, capture_output=True, check=False)
+                changed_files = diff_proc.stdout.splitlines() if diff_proc.stdout else []
+
+                # Filter for relevant files
+                changed_files = [f for f in changed_files if f.endswith(('.ts', '.tsx', '.js', '.jsx'))]
+
+                if changed_files:
+                    # Run auditor on these files
+                    # We need to pass absolute paths or run from worktree root
+                    # Let's run from worktree root and pass relative paths
+                    audit_cmd = ["python3", auditor_script, "--json"] + changed_files
+
+                    # Need to make sure common_config can be found, so set PYTHONPATH
+                    audit_env = os.environ.copy()
+                    audit_env["PYTHONPATH"] = str(WORKSPACE_ROOT)
+
+                    audit_proc = run(audit_cmd, cwd=worktree_path, capture_output=True, check=False, env=audit_env)
+
+                    if audit_proc.returncode != 0:
+                        print("[WARN] Auditor found issues.")
+                        try:
+                            findings = json.loads(audit_proc.stdout)
+                            if findings:
+                                # Append to results
+                                results.append({"name": "Codebase Audit", "status": "[WARN]", "duration": "n/a"})
+                                # We won't fail the build for now, but we will add it to the comment
+                                audit_log = "\n".join([f"[{f['auditor']}] {f['file']}:{f['line']} - {f['message']}" for f in findings])
+
+                                # If we already have a failure, we append to it? No, failure is None here.
+                                # Let's create a separate section or just append to failure details if we wanted to fail.
+                                # For now, let's treat it as a pass with warnings, or fail if severe?
+                                # Let's fail if security issues are found.
+                                security_issues = [f for f in findings if f['auditor'] == 'Security']
+                                if security_issues:
+                                    print("[FAIL] Security issues found!")
+                                    failure = {
+                                        "step": "Security Audit",
+                                        "cmd": " ".join(audit_cmd),
+                                        "log": audit_log
+                                    }
+                                    results[-1]["status"] = "[FAIL]"
+                                else:
+                                    # Just append to analyzer summary or similar?
+                                    # Let's attach it to analyzer_summary for now as a "Audit Report"
+                                    if analyzer_summary is None:
+                                        analyzer_summary = ""
+                                    analyzer_summary += "\n\n### Codebase Audit Findings\n" + audit_log
+                        except json.JSONDecodeError:
+                            print("[WARN] Auditor output not valid JSON.")
+                else:
+                    print("[INFO] No relevant changed files to audit.")
+
+            except Exception as e:
+                print(f"[WARN] Failed to run auditor: {e}")
+
+
         # Optional: run structure analyzer and append summary
         analyzer_path = os.path.join(WORKSPACE_ROOT, "agent-requests", "analyze_structure.py")
         if os.path.exists(analyzer_path):
             try:
                 aproc = run(["python", analyzer_path, "--json"], cwd=WORKSPACE_ROOT, check=False, capture_output=True)
-                analyzer_summary = aproc.stdout
+                analyzer_json_out = aproc.stdout
+                if analyzer_summary:
+                    analyzer_summary = analyzer_summary + "\n\n--- Structure Analysis ---\n" + analyzer_json_out
+                else:
+                    analyzer_summary = analyzer_json_out
             except Exception:
-                analyzer_summary = None
+                pass # analyzer_summary already handled or None
 
     # 7. Handle Outcome
     session_link = None

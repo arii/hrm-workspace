@@ -549,6 +549,14 @@ def main():
         "hours_old", type=int, default=10, help="Sessions older than this many hours will be deleted"
     )
 
+    # Health Check
+    p_health = subparsers.add_parser(
+        "health-check", help="Check session health and identify stalled/orphaned sessions"
+    )
+    p_health.add_argument(
+        "--clean", action="store_true", help="Automatically delete stalled/orphaned sessions"
+    )
+
     subparsers.add_parser("list-sources", help="List available Jules sources")
     subparsers.add_parser(
         "summary", help="Generate Markdown summary of sessions"
@@ -663,6 +671,70 @@ def main():
                 except ValueError as e:
                     logger.warning(f"Could not parse createTime '{created_at_iso}' for session {s.get('name', 'N/A')}: {e}")
         logger.info(f"✅ Deleted {deleted_count} sessions older than {hours_old} hours.")
+
+    elif args.command == "health-check":
+        logger.info("🏥 Running Session Health Check...")
+        sessions = client.list_sessions()
+        prs = gh_client.list_prs(state="all", limit=100) # Need closed/merged too
+
+        pr_map = {p['url']: p for p in prs}
+
+        stalled_sessions = []
+        orphaned_sessions = []
+
+        now_utc = datetime.now(timezone.utc)
+
+        for s in sessions:
+            sid = s.get("name", "").split("/")[-1]
+            state = s.get("state")
+            created_at_iso = s.get("createTime")
+
+            # Check stalled: Running for > 24h
+            if state == "RUNNING" and created_at_iso:
+                try:
+                    dt_utc = datetime.fromisoformat(created_at_iso.replace("Z", "+00:00"))
+                    if (now_utc - dt_utc).total_seconds() > 24 * 3600:
+                        stalled_sessions.append(s)
+                except ValueError:
+                    pass
+
+            # Check orphaned: Associated PR is closed/merged but session is active
+            outputs = s.get("outputs", [])
+            for o in outputs:
+                if "pullRequest" in o:
+                    pr_url = o["pullRequest"].get("url")
+                    if pr_url in pr_map:
+                        pr = pr_map[pr_url]
+                        if pr['state'] in ['MERGED', 'CLOSED'] and state not in ['SUCCEEDED', 'FAILED', 'CANCELLED', 'TERMINATED']:
+                            orphaned_sessions.append((s, pr['state']))
+
+        if not stalled_sessions and not orphaned_sessions:
+            print("✅ All sessions look healthy.")
+        else:
+            if stalled_sessions:
+                print(f"\n🐢 Found {len(stalled_sessions)} Stalled Sessions (>24h running):")
+                for s in stalled_sessions:
+                    print(f"  - {s.get('name')} ({s.get('title')})")
+
+            if orphaned_sessions:
+                print(f"\n👻 Found {len(orphaned_sessions)} Orphaned Sessions (PR closed/merged):")
+                for s, status in orphaned_sessions:
+                    print(f"  - {s.get('name')} (PR Status: {status})")
+
+            if args.clean:
+                print("\n🧹 Cleaning up unhealthy sessions...")
+                for s in stalled_sessions:
+                    sid = s.get("name", "").split("/")[-1]
+                    logger.info(f"Deleting stalled session {sid}...")
+                    client.delete_session(sid)
+
+                for s, _ in orphaned_sessions:
+                    sid = s.get("name", "").split("/")[-1]
+                    logger.info(f"Deleting orphaned session {sid}...")
+                    client.delete_session(sid)
+                print("✅ Cleanup complete.")
+            else:
+                print("\nUse --clean to delete these sessions.")
 
     elif args.command == "list-sources":
         sources = client.list_sources()
