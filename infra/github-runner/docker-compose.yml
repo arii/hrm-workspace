@@ -1,0 +1,15 @@
+services:
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hrm-actions-runner
+    container_name: hrm-runner
+    restart: always
+    environment:
+      - REPO_URL=${REPO_URL}
+      # You can provide a specific runner token
+      - RUNNER_TOKEN=${RUNNER_TOKEN:-}
+      # OR provide a PAT to fetch the token dynamically
+      - GH_TOKEN=${GH_TOKEN:-}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
