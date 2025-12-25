@@ -166,7 +166,7 @@ class JulesClient:
     def delete_session(self, session_name: str) -> bool:
         """Delete a session."""
         logger.info(f"🗑️ Deleting session: {session_name}")
-        response = self._request("DELETE", session_name)
+        response = self._request("DELETE", f"sessions/{session_name}")
         
         success = response is not None and response.get("error") != "http_error"
         if success:
