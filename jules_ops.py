@@ -660,6 +660,7 @@ def main():
                         logger.info(f"    Deleting session: {session_id} (Created: {format_time(created_at_iso)})")
                         client.delete_session(session_id)
                         deleted_count += 1
+                        time.sleep(1)  # Add a delay to avoid rate-limiting
                 except ValueError as e:
                     logger.warning(f"Could not parse createTime '{created_at_iso}' for session {s.get('name', 'N/A')}: {e}")
         logger.info(f"✅ Deleted {deleted_count} sessions older than {hours_old} hours.")

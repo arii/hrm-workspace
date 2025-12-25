@@ -181,3 +181,15 @@ class GitHubClient:
                 "number,title,assignees,updatedAt,url",
             ]
         ) or []
+
+    def create_issue(self, title: str, body: str, labels: List[str] = None, assignees: List[str] = None) -> Optional[str]:
+        """Create a GitHub issue."""
+        cmd = ["gh", "issue", "create", "--title", title, "--body", body]
+        if labels:
+            for label in labels:
+                cmd.extend(["--label", label])
+        if assignees:
+            for assignee in assignees:
+                cmd.extend(["--assignee", assignee])
+
+        return self.run_cmd(cmd)
