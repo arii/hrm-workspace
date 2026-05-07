@@ -31,6 +31,12 @@ except ImportError:
     logger = logging.getLogger("audit_codebase")
     HRM_REPO_DIR = Path("hrm")
 
+# Import the new Gemini client
+try:
+    from gemini_client import GeminiClient
+except ImportError:
+    GeminiClient = None
+
 class BaseAuditor:
     def __init__(self, name: str):
         self.name = name
@@ -109,11 +115,10 @@ class GeminiAuditor(BaseAuditor):
     def __init__(self):
         super().__init__("Gemini")
         self.api_key = os.environ.get("GEMINI_KEY")
-        self.model = "gemini-2.0-flash-lite-preview-02-05"
-        self.url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
+        self.client = GeminiClient() if GeminiClient else None
 
     def audit(self, filepath: str, content: str):
-        if not self.api_key:
+        if not self.api_key or not self.client:
             return
 
         if not filepath.endswith(('.ts', '.tsx', '.js', '.jsx')):
@@ -138,21 +143,8 @@ Code:
 """
 
         try:
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"responseMimeType": "application/json"}
-            }
-
-            response = requests.post(
-                f"{self.url}?key={self.api_key}",
-                json=payload,
-                timeout=30
-            )
-            response.raise_for_status()
-
-            result = response.json()
-            if "candidates" in result and result["candidates"]:
-                raw_text = result["candidates"][0]["content"]["parts"][0]["text"]
+            raw_text = self.client.generate_content(prompt, response_mime_type="application/json")
+            if raw_text:
                 # Clean up any potential markdown backticks if the model ignored instructions
                 raw_text = raw_text.strip().replace("```json", "").replace("```", "")
 

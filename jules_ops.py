@@ -18,6 +18,7 @@ from common_config import (
 )
 from jules_client import get_jules_client
 from github_client import GitHubClient
+from orchestrator import ServicesOrchestrator
 
 # Optional Pandas Import
 try:
@@ -42,21 +43,7 @@ DEFAULT_SOURCE = JULES_DEFAULT_SOURCE
 
 # Initialized GitHub Client
 gh_client = GitHubClient(repo_path=HRM_REPO_DIR)
-
-def fetch_issue_context(issue_number):
-    logger.info(f"📥 Fetching context from Issue #{issue_number}...")
-    data = gh_client.get_issue(issue_number)
-
-    if data:
-        return {
-            "title": data["title"],
-            "prompt": (
-                f"Task: {data['title']}\n\n"
-                f"Context from Issue #{issue_number}:\n"
-                f"{data['body']}\n\nReference: {data['url']}"
-            ),
-        }
-    return None
+orchestrator = ServicesOrchestrator()
 
 
 def format_time(iso_str):
@@ -605,25 +592,13 @@ def main():
                 client.monitor_session(session_name)
 
     elif args.command == "work-on":
-        data = fetch_issue_context(args.issue_id)
-        if not data:
-            logger.error("Could not fetch issue data.")
-            sys.exit(1)
-
-        branch_name = args.branch or f"feature/issue-{args.issue_id}"
-        logger.info(
-            f"Assigning Jules  Issue #{args.issue_id} -> Branch: {branch_name}"
-        )
-        session_name = client.create_session(
-            prompt=data["prompt"],
-            source=DEFAULT_SOURCE,
-            branch=branch_name,
-            title=f"Fix: {data['title']} (#{args.issue_id})",
-        )
-
+        session_name = orchestrator.dispatch_jules_for_issue(args.issue_id, args.branch)
         if session_name:
             print(f"✅ Session started: {session_name}")
             client.monitor_session(session_name)
+        else:
+            logger.error(f"Failed to start session for Issue #{args.issue_id}")
+            sys.exit(1)
 
     elif args.command == "watch":
         client.monitor_session(args.session_name)
