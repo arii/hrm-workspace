@@ -1,5 +1,7 @@
 # hrm-workspace
 
+> Development is inactive. This repository preserves historical HRM automation and Jules tooling. It is not the actively maintained [HRM application](https://github.com/arii/hrm), which remains a separate project. For newer work, see [Ariel Anders' portfolio](https://arii.github.io/).
+
 Operational workspace for HRM automation, tooling, and local development.
 
 This workspace contains unified Python scripts for managing agentic workflows and integrates the `hrm` application as a Git submodule.
